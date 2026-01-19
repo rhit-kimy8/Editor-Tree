@@ -474,9 +474,9 @@ public class EditTreeMilestone1Test {
 		// Then comment out the next 2 lines now and any time
 		// you aren't using the graphical debugger.
 		t.show();
-		while (true) {
-			/* spin until user closes graphic window */
-		}
+//		while (true) {
+//			/* spin until user closes graphic window */
+//		}
 	}
 
 	@AfterAll
