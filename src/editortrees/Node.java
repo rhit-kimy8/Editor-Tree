@@ -3,6 +3,7 @@ package editortrees;
 import java.util.ArrayList;
 
 import editortrees.EditTree.BooleanContainer;
+import editortrees.EditTree.RotationCounter;
  
 /**
 * A node in a height-balanced binary tree with rank. Except for the NULL_NODE,
@@ -81,36 +82,32 @@ public class Node {
 		}
 		return left.slowSize() + right.slowSize() + 1;
 	}
- 
-	public char get(int pos) {
-		if (this.rank == pos) return this.data;
-		if (pos < this.rank) {
-			return this.left.get(pos);
-		} else {
-			return this.right.get(pos-(this.rank+1));
-		}
-	}
- 
- 
-	public void add(char ch, int pos) {
-		if (pos <= this.rank) {
-			this.rank++;
-			if (pos == 0 && this.left == NULL_NODE) {
-				this.left = new Node(ch);
-				return;
-			}
-			this.left.add(ch, pos);
-		} else {
-			int newIndex = pos-(this.rank+1);
-			if (newIndex == 0 && this.right == NULL_NODE) {
-				this.right = new Node(ch);
-				return;
-			}
-			this.right.add(ch, newIndex);
-		}
-		
-	}
 	
+	public boolean hasLeft() {
+		return this.left != NULL_NODE;
+	}
+
+	public boolean hasRight() {
+		return this.right != NULL_NODE;
+	}
+
+	public boolean hasParent() {
+		return false;
+	}
+
+	public Node getParent() {
+		return NULL_NODE;
+	}
+ 
+	// You will probably want to add more constructors and many other
+	// recursive methods here. I added 47 of them - most were tiny helper methods
+	// to make the rest of the code easy to understand. My longest method was
+	// delete(): 20 lines of code other than } lines. Other than delete() and one of
+	// its helpers, the others were less than 10 lines long. Well-named helper
+	// methods are more effective than comments in writing clean code.
+	// TODO: By the end of milestone 1, consider if you want to use the graphical debugger. See
+	// the unit test throwing an error and the README.txt file.
+ 
 	public String inOrderString() {
 		if (this == NULL_NODE) {
 			return "";
@@ -118,15 +115,15 @@ public class Node {
 		return this.left.inOrderString() + this.data + this.right.inOrderString();
 	}
 	
-	public ArrayList<String> inOrderRankString() {
+	public ArrayList<String> PreOrderRankString() {
 		ArrayList<String> arr = new ArrayList<>();
 		if (this == NULL_NODE) {
 			return new ArrayList<String>();
 		}
 		String str = this.data + Integer.toString(this.rank);
 		arr.add(str);
-		arr.addAll(left.inOrderRankString());
-		arr.addAll(right.inOrderRankString());
+		arr.addAll(left.PreOrderRankString());
+		arr.addAll(right.PreOrderRankString());
 		return arr;
 	}
 	
@@ -145,27 +142,136 @@ public class Node {
 		right.ranksMatchSize(bc);
 	}
 	
-	public boolean hasLeft() {
-		return this.left != NULL_NODE;
+	public ArrayList<String> toDebugString() {
+		ArrayList<String> arr = new ArrayList<>();
+		if (this == NULL_NODE) {
+			return new ArrayList<String>();
+		}
+		String str = this.data + Integer.toString(this.rank) + (this.balance).toString();		
+		arr.add(str);
+		arr.addAll(left.toDebugString());
+		arr.addAll(right.toDebugString());
+		return arr;
+	}
+	
+	public Node add(char ch, int pos, RotationCounter rc) {
+		if (this == NULL_NODE) return new Node(ch);
+		
+		if (pos <= this.rank) {
+			this.rank++;
+			this.left = this.left.add(ch, pos, rc);
+			
+			// Check Balance and Rotation
+			if (this.balance == Node.Code.RIGHT) {
+				this.balance = Node.Code.SAME;
+			}else if (this.balance == Node.Code.SAME) {
+				this.balance = Node.Code.LEFT;
+			}else if (Math.abs((this.left.slowHeight() - this.right.slowHeight())) > 1){
+				if (this.left.balance == Node.Code.RIGHT) {
+					rc.countUp();
+					rc.countUp();
+					return doubleLeftRightRotation(this, this.left);
+				}
+				rc.countUp();
+				return singleRotateRight(this, this.left);
+			}
+			return this;
+		} else {
+			int newIndex = pos-(this.rank+1);
+			this.right = this.right.add(ch, newIndex, rc);
+			
+			if (this.balance == Node.Code.LEFT) {
+				this.balance = Node.Code.SAME;
+			}else if (this.balance == Node.Code.SAME) {
+				this.balance = Node.Code.RIGHT;
+			}else if(Math.abs((this.left.slowHeight() - this.right.slowHeight())) > 1){
+				if (this.right.balance == Node.Code.LEFT) {
+					rc.countUp();
+					rc.countUp();
+					return doubleRightLeftRotation(this, this.right);
+				}
+				rc.countUp();
+				return singleRotateLeft(this, this.right);
+			}	
+		}
+		this.updateBalance();
+		return this;
+	}
+	
+	public char get(int pos) {
+		if (this.rank == pos) return this.data;
+		if (pos < this.rank) {
+			return this.left.get(pos);
+		} else {
+			return this.right.get(pos-(this.rank+1));
+		}
+	}
+	
+	private void updateBalance() {
+		int diff = this.left.slowHeight() - this.right.slowHeight();
+		if (diff == 0) {
+			this.balance = Node.Code.SAME;
+		}else if (diff > 0) {
+			this.balance = Node.Code.LEFT;
+		}else {
+			this.balance = Node.Code.RIGHT;
+		}
+	}
+	
+	private Node singleRotateLeft(Node parent, Node child) {
+		Node temp = child.left;
+		child.left = parent;
+		parent.right = temp;
+		parent.rank = parent.left.slowSize();
+		child.rank = child.left.slowSize();
+		parent.updateBalance();
+		child.updateBalance();
+		return child;
+	}
+	
+	private Node singleRotateRight(Node parent, Node child) {
+		Node temp = child.right;
+		child.right = parent;
+		parent.left = temp;
+		parent.rank = parent.left.slowSize();
+		child.rank = child.left.slowSize();
+		parent.updateBalance();
+		child.updateBalance();
+		return child;
+	}
+	
+	private Node doubleLeftRightRotation(Node parNode, Node childNode) {
+			childNode = singleRotateLeft(childNode, childNode.right);
+			return singleRotateRight(parNode, childNode);
+		}
+		 
+	private Node doubleRightLeftRotation(Node parNode, Node childNode) {
+			childNode = singleRotateRight(childNode, childNode.left);
+			return singleRotateLeft(parNode, childNode);
+		}
+	
+	public void balanceCodesAreCorrect(BooleanContainer isBalanced) {
+		if (this == NULL_NODE) return;
+		
+		if (!isBalanced.isMatch) return;
+		
+		Node.Code balance;
+		int diff = this.left.slowHeight() - this.right.slowHeight();
+		if (diff == 0) {
+			balance = Node.Code.SAME;
+		}else if (diff > 0) {
+			balance = Node.Code.LEFT;
+		}else {
+			balance = Node.Code.RIGHT;
+		}
+		if (this.balance == balance) {
+			isBalanced.isMatch = true;
+		}else isBalanced.isMatch = false;
+		
+		left.balanceCodesAreCorrect(isBalanced);
+		right.balanceCodesAreCorrect(isBalanced);
+		return;
 	}
 
-	public boolean hasRight() {
-		return this.right != NULL_NODE;
-	}
-
-	public boolean hasParent() {
-		return false;
-	}
-
-	public Node getParent() {
-		return NULL_NODE;
-	}
-	// You will probably want to add more constructors and many other
-	// recursive methods here. I added 47 of them - most were tiny helper methods
-	// to make the rest of the code easy to understand. My longest method was
-	// delete(): 20 lines of code other than } lines. Other than delete() and one of
-	// its helpers, the others were less than 10 lines long. Well-named helper
-	// methods are more effective than comments in writing clean code.
-	// TODO: By the end of milestone 1, consider if you want to use the graphical debugger. See
-	// the unit test throwing an error and the README.txt file.
+	
 }

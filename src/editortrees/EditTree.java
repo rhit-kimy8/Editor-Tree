@@ -17,6 +17,7 @@ public class EditTree {
 	private DisplayableBinaryTree display;
 	Node root;
 	private int size;
+	public RotationCounter rc = new RotationCounter(0);
  
 	/**
 	 * MILESTONE 1 Construct an empty tree
@@ -44,7 +45,23 @@ public class EditTree {
 	 * @param e
 	 */
 	public EditTree(EditTree e) {
+		if (e.root == Node.NULL_NODE)
+			this.root = e.root;
+		else
+			this.root = treeCopy(e.root);
+		this.size = e.size;
+	}
  
+	private Node treeCopy(Node eNode) {
+		if (eNode == Node.NULL_NODE) {
+			return Node.NULL_NODE;
+		}
+		Node newNode = new Node(eNode.data);
+		newNode.rank = eNode.rank;
+		newNode.balance = eNode.balance;
+		newNode.left = treeCopy(eNode.left);
+		newNode.right = treeCopy(eNode.right);
+		return newNode;
 	}
  
 	/**
@@ -90,7 +107,7 @@ public class EditTree {
 			size++;
 			return;
 		}
-		root.add(ch, size);
+		root = root.add(ch, size, rc);
 		size++;
 		// Notes:
 		// 1. Please document chunks of code as you go. Why are you doing what
@@ -120,7 +137,7 @@ public class EditTree {
 		else if (root == Node.NULL_NODE) {
 			root = new Node(ch);
 		}
-		else root.add(ch, pos);
+		else root = root.add(ch, pos,rc);
 		size++;
 	}
  
@@ -138,8 +155,7 @@ public class EditTree {
 	 *         the tree.
 	 */
 	public String toRankString() {
-		ArrayList<String> arr = root.inOrderRankString();
-		System.out.println(arr);
+		ArrayList<String> arr = root.PreOrderRankString();
 		String sb = "";
 		sb = sb + arr.get(0);
 		for (int i = 1; i < arr.size(); i++) {
@@ -229,7 +245,17 @@ public class EditTree {
 	 *         the tree.
 	 */
 	public String toDebugString() {
-		return ""; // replace by a real calculation.
+		if (root == Node.NULL_NODE) return "[]";
+		ArrayList<String> arr = root.toDebugString(); // replace by a real calculation.
+		String sb = "";
+		sb = sb + arr.get(0);
+		for (int i = 1; i < arr.size(); i++) {
+			sb = sb + ", ";
+			sb = sb + arr.get(i);
+		}
+		sb = "[" + sb;
+		sb = sb + "]";
+		return sb;
 	}
  
 	/**
@@ -239,7 +265,15 @@ public class EditTree {
 	 * @return number of rotations since this tree was created.
 	 */
 	public int totalRotationCount() {
-		return -1; // replace by a real calculation.
+		return rc.count; // replace by a real calculation.
+	}
+	
+	public class RotationCounter {
+		private int count;
+		public RotationCounter(int count) {
+			this.count = count;
+		}
+		public void countUp() {count = count +1;};
 	}
  
 	/**
@@ -259,7 +293,9 @@ public class EditTree {
 	 * @return True iff each node's balance code is correct.
 	 */
 	public boolean balanceCodesAreCorrect() {
-		return false; // replace by a real calculation.
+		BooleanContainer isBalanced = new BooleanContainer (true);
+		root.balanceCodesAreCorrect(isBalanced);
+		return isBalanced.isMatch; // replace by a real calculation.
 	}
  
 	/**
@@ -270,7 +306,25 @@ public class EditTree {
 	 * @return the height of this tree
 	 */
 	public int fastHeight() {
-		return -2; // replace by a real calculation.
+		int height = -1;
+		if (root == Node.NULL_NODE) return height;
+		
+		Node current = root;
+		
+		while (current != Node.NULL_NODE) {
+			if (current.balance == Node.Code.LEFT) {
+				current = current.left;
+				height ++;
+			}else if (current.balance == Node.Code.RIGHT) {
+				current = current.right;
+				height ++;
+			}else {
+				current = current.left;
+				height ++;
+			}
+		}
+		
+		return height;
 	}
  
 	/**
