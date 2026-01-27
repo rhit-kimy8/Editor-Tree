@@ -166,7 +166,7 @@ public class Node {
 				this.balance = Node.Code.SAME;
 			}else if (this.balance == Node.Code.SAME) {
 				this.balance = Node.Code.LEFT;
-			}else if (Math.abs((this.left.slowHeight() - this.right.slowHeight())) > 1){
+			}else if (Math.abs((this.left.fastHeight() - this.right.fastHeight())) > 1){
 				if (this.left.balance == Node.Code.RIGHT) {
 					rc.countUp();
 					rc.countUp();
@@ -184,7 +184,7 @@ public class Node {
 				this.balance = Node.Code.SAME;
 			}else if (this.balance == Node.Code.SAME) {
 				this.balance = Node.Code.RIGHT;
-			}else if(Math.abs((this.left.slowHeight() - this.right.slowHeight())) > 1){
+			}else if(Math.abs((this.left.fastHeight() - this.right.fastHeight())) > 1){
 				if (this.right.balance == Node.Code.LEFT) {
 					rc.countUp();
 					rc.countUp();
@@ -207,8 +207,30 @@ public class Node {
 		}
 	}
 	
+	public int fastHeight() {
+		int height = -1;
+		if (this == Node.NULL_NODE) return height;
+		
+		Node current = this;
+		
+		while (current != Node.NULL_NODE) {
+			if (current.balance == Node.Code.LEFT) {
+				current = current.left;
+				height ++;
+			}else if (current.balance == Node.Code.RIGHT) {
+				current = current.right;
+				height ++;
+			}else {
+				current = current.left;
+				height ++;
+			}
+		}
+		
+		return height;
+	}
+	
 	private void updateBalance() {
-		int diff = this.left.slowHeight() - this.right.slowHeight();
+		int diff = this.left.fastHeight() - this.right.fastHeight();
 		if (diff == 0) {
 			this.balance = Node.Code.SAME;
 		}else if (diff > 0) {
@@ -256,7 +278,7 @@ public class Node {
 		if (!isBalanced.isMatch) return;
 		
 		Node.Code balance;
-		int diff = this.left.slowHeight() - this.right.slowHeight();
+		int diff = this.left.fastHeight() - this.right.fastHeight();
 		if (diff == 0) {
 			balance = Node.Code.SAME;
 		}else if (diff > 0) {
