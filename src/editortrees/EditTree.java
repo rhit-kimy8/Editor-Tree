@@ -5,8 +5,8 @@ import java.util.ArrayList;
 /**
 * A height-balanced binary tree with rank that could be the basis for a text
 * editor.
-* 
-* @author Ciel Kim 
+*
+* @author Ciel Kim
 * @author Eden Kim
 * TODO: Acknowledge anyone else you got help from here, along
 *         with the help they provided:
@@ -14,10 +14,11 @@ import java.util.ArrayList;
 *
 */
 public class EditTree {
-	private DisplayableBinaryTree display;
+//	private DisplayableBinaryTree display;
 	Node root;
 	private int size;
-	public RotationCounter rc = new RotationCounter(0);
+	public dataContainer dc = new dataContainer();
+	private DisplayableBinaryTree display;
  
 	/**
 	 * MILESTONE 1 Construct an empty tree
@@ -72,8 +73,16 @@ public class EditTree {
 	 * @param s
 	 */
 	public EditTree(String s) {
- 
+		if(s.isEmpty()){
+			root = Node.NULL_NODE;
+			size = 0;
+		} else {
+			root = Node.NULL_NODE;
+			root = root.buildStringTree(s, 0, s.length()-1);
+			size = s.length();
+		}
 	}
+ 
  
 	/**
 	 * MILESTONE 1 return the string produced by an in-order traversal of this tree
@@ -107,7 +116,7 @@ public class EditTree {
 			size++;
 			return;
 		}
-		root = root.add(ch, size, rc);
+		root = root.add(ch, size, dc);
 		size++;
 		// Notes:
 		// 1. Please document chunks of code as you go. Why are you doing what
@@ -137,7 +146,7 @@ public class EditTree {
 		else if (root == Node.NULL_NODE) {
 			root = new Node(ch);
 		}
-		else root = root.add(ch, pos,rc);
+		else root = root.add(ch, pos, dc);
 		size++;
 	}
  
@@ -155,16 +164,17 @@ public class EditTree {
 	 *         the tree.
 	 */
 	public String toRankString() {
+		if (root == Node.NULL_NODE) return "[]";
 		ArrayList<String> arr = root.PreOrderRankString();
-		String sb = "";
-		sb = sb + arr.get(0);
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+		sb.append(arr.get(0));
 		for (int i = 1; i < arr.size(); i++) {
-			sb = sb + ", ";
-			sb = sb + arr.get(i);
+			sb.append(", ");
+			sb.append(arr.get(i));
 		}
-		sb = "[" + sb;
-		sb = sb + "]";
-		return sb;
+		sb.append("]");
+		return sb.toString();
 	}
  
 	/**
@@ -222,19 +232,40 @@ public class EditTree {
 	 * @return True iff each node's rank correctly equals its left subtree's size.
 	 */
 	public boolean ranksMatchLeftSubtreeSize() {
-		BooleanContainer isMatch = new BooleanContainer(true);
+		dataContainer isMatch = new dataContainer();
 		root.ranksMatchSize(isMatch);
 		return isMatch.isMatch;
 	}
 	
-	public class BooleanContainer{
-		boolean isMatch;
-		public BooleanContainer(boolean isMatch) {
-			this.isMatch = isMatch;
-		}
-		
+//	public class BooleanContainer{
+//		boolean isMatch;
+//		public BooleanContainer(boolean isMatch) {
+//			this.isMatch = isMatch;
+//		}
+//		
+//	}
+//
+//	public class CharContainer{
+//		char data = '0';
+//		public CharContainer() {
+//		}
+//	}
+//	
+//	public class RotationCounter {
+//		private int count;
+//		public RotationCounter(int count) {
+//			this.count = count;
+//		}
+//		public void countUp() {count = count +1;};
+//	}
+	
+	public class dataContainer{
+		boolean isMatch = true;
+		char data = '0';
+		private int count;
+		public void countUp() {count = count +1;};
 	}
- 
+	
 	/**
 	 * MILESTONE 2 Similar to toRankString(), but adding in balance codes too.
 	 *
@@ -247,15 +278,15 @@ public class EditTree {
 	public String toDebugString() {
 		if (root == Node.NULL_NODE) return "[]";
 		ArrayList<String> arr = root.toDebugString(); // replace by a real calculation.
-		String sb = "";
-		sb = sb + arr.get(0);
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+		sb.append(arr.get(0));
 		for (int i = 1; i < arr.size(); i++) {
-			sb = sb + ", ";
-			sb = sb + arr.get(i);
+			sb.append(", ");
+			sb.append(arr.get(i));
 		}
-		sb = "[" + sb;
-		sb = sb + "]";
-		return sb;
+		sb.append("]");
+		return sb.toString();
 	}
  
 	/**
@@ -265,15 +296,7 @@ public class EditTree {
 	 * @return number of rotations since this tree was created.
 	 */
 	public int totalRotationCount() {
-		return rc.count; // replace by a real calculation.
-	}
-	
-	public class RotationCounter {
-		private int count;
-		public RotationCounter(int count) {
-			this.count = count;
-		}
-		public void countUp() {count = count +1;};
+		return dc.count; // replace by a real calculation.
 	}
  
 	/**
@@ -293,7 +316,7 @@ public class EditTree {
 	 * @return True iff each node's balance code is correct.
 	 */
 	public boolean balanceCodesAreCorrect() {
-		BooleanContainer isBalanced = new BooleanContainer (true);
+		dataContainer isBalanced = new dataContainer();
 		root.balanceCodesAreCorrect(isBalanced);
 		return isBalanced.isMatch; // replace by a real calculation.
 	}
@@ -306,25 +329,7 @@ public class EditTree {
 	 * @return the height of this tree
 	 */
 	public int fastHeight() {
-		int height = -1;
-		if (root == Node.NULL_NODE) return height;
-		
-		Node current = root;
-		
-		while (current != Node.NULL_NODE) {
-			if (current.balance == Node.Code.LEFT) {
-				current = current.left;
-				height ++;
-			}else if (current.balance == Node.Code.RIGHT) {
-				current = current.right;
-				height ++;
-			}else {
-				current = current.left;
-				height ++;
-			}
-		}
-		
-		return height;
+		return root.fastHeight();
 	}
  
 	/**
@@ -340,7 +345,10 @@ public class EditTree {
 		// node to be deleted with either its in-order successor or predecessor.
 		// The tests assume assume that you will replace it with the
 		// *successor*.
-		return '%'; // replace by a real calculation.
+		if (pos < 0 || pos > size) throw new IndexOutOfBoundsException("nice try");
+		root = root.delete(pos,dc);
+		size--;
+		return dc.data; // replace by a real calculation.
 	}
  
 	/**
@@ -356,9 +364,12 @@ public class EditTree {
 	 *                                   legitimate indexes within this tree.
 	 */
 	public String get(int pos, int length) throws IndexOutOfBoundsException {
-		return ""; // replace by a real calculation.
+		if (pos < 0 || size < pos + length) throw new IndexOutOfBoundsException("nice try");
+		StringBuilder sb = new StringBuilder();
+		root.getStr(pos, length, sb);
+		return sb.toString();
 	}
-
+ 
 	public void show() {
 		if (this.display == null) {
 			this.display = new DisplayableBinaryTree(this, 960, 1080, true);

@@ -1539,7 +1539,6 @@ public class EditTreeMilestone2Test {
 			for (int j = 0; j < 10; j++) {
 				char toAdd = (char) ('0' + j);
 				t.add(toAdd, random.nextInt(SKIP_INTERVAL * k + j + 1));
-				System.out.println("work " + k);
 
 				// TODO: You can uncomment and modify the following code as needed if you find bugs 
 				// that you need to track down. Just remember to comment it out again when you're done,
