@@ -237,28 +237,6 @@ public class EditTree {
 		return isMatch.isMatch;
 	}
 	
-//	public class BooleanContainer{
-//		boolean isMatch;
-//		public BooleanContainer(boolean isMatch) {
-//			this.isMatch = isMatch;
-//		}
-//		
-//	}
-//
-//	public class CharContainer{
-//		char data = '0';
-//		public CharContainer() {
-//		}
-//	}
-//	
-//	public class RotationCounter {
-//		private int count;
-//		public RotationCounter(int count) {
-//			this.count = count;
-//		}
-//		public void countUp() {count = count +1;};
-//	}
-	
 	public class dataContainer{
 		boolean isMatch = true;
 		char data = '0';
